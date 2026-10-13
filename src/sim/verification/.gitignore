@@ -1,0 +1,12 @@
+/work/
+*.log
+*.vdb
+csrc/
+simv
+simv.daidir/
+ucli.key
+vc_hdrs.h
+AN.DB/
+DVEfiles/
+*.fsdb
+*.vpd

@@ -1,0 +1,195 @@
+From b9d78e58dc79eff87a65db186882385e9ed0cbee Mon Sep 17 00:00:00 2001
+From: Mahesh Vaidya <mahesh.vaidya@altera.com>
+Date: Wed, 9 Sep 2026 20:10:10 +0000
+Subject: [PATCH] net: stmmac: socfpga: restrict link to 1000baseT/Full on
+ fixed-1G datapaths
+
+The Agilex 3 LTH TSN configuration 3 design wires the MAC datapath for a
+single fixed 1G rate. It has no 10/100 support, so
+a link that autonegotiates to any other speed comes up but carries no
+traffic - a failure that is silent and awkward to diagnose in the field.
+
+Add a plat_stmmacenet_data flag, fixed_1g_datapath, set by the socfpga
+glue from the new altr,fixed-1000-datapath device tree property.
+stmmac_mac_get_caps() uses it to narrow mac_capabilities to MAC_1000FD
+plus the pause bits. phylink_validate() then masks the PHY's supported
+and advertising link modes against that when the PHY is brought up, so
+autonegotiation cannot settle on an unsupported rate and
+phylink_ethtool_ksettings_set() rejects any attempt to advertise one.
+
+Restricting the advertisement is not sufficient on its own: PHYs that
+implement autonomous downshift, such as the MaxLinear GPY series used on
+this board, drop to 100M by themselves when 1G training fails on a
+marginal cable, regardless of what was advertised. Disable the downshift
+tunable after the PHY is connected so a bad link stays visibly down.
+
+The property describes the datapath rather than the presence of PTP,
+since PTP does not itself imply a single rate and a future design could
+combine PTP with rate adaptation. Keeping the decision in one helper in
+the glue also leaves a single place to switch to an FPGA fabric
+capability register later, so that one kernel image can serve both this
+design and a 10/100/1G design.
+
+Boards without the property are unaffected.
+
+Upstream-Status: Pending
+Signed-off-by: Mahesh Vaidya <mahesh.vaidya@altera.com>
+---
+ .../intel/socfpga_agilex3_socdk_tsn_cfg3.dts  |  1 +
+ .../ethernet/stmicro/stmmac/dwmac-socfpga.c   | 27 +++++++++
+ .../net/ethernet/stmicro/stmmac/stmmac_main.c | 55 +++++++++++++++++++
+ include/linux/stmmac.h                        |  1 +
+ 4 files changed, 84 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/intel/socfpga_agilex3_socdk_tsn_cfg3.dts b/arch/arm64/boot/dts/intel/socfpga_agilex3_socdk_tsn_cfg3.dts
+index 2bb735bef3b3..b41c26dcdd26 100644
+--- a/arch/arm64/boot/dts/intel/socfpga_agilex3_socdk_tsn_cfg3.dts
++++ b/arch/arm64/boot/dts/intel/socfpga_agilex3_socdk_tsn_cfg3.dts
+@@ -23,6 +23,7 @@ &gmac0 {
+ 	#size-cells = <1>;
+ 	altr,gmii-to-sgmii-converter = <&gmii_to_sgmii_converter>;
+ 	altr,mrphy-1g-crc-workaround;
++	altr,fixed-1000-datapath;
+ 
+ 	mdio0 {
+ 		#address-cells = <1>;
+diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
+index a1119b18b5be..53c88b22697e 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
++++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
+@@ -374,6 +374,24 @@ static const struct attribute_group socfpga_stmmac_attr_group = {
+ 	.attrs = socfpga_stmmac_attrs,
+ };
+ 
++/* Determine whether this design's MAC datapath is wired for a single fixed
++ * 1G rate, with no 10/100 and no 2.5G support.
++ *
++ * Today this is expressed as a device tree property. If the FPGA design later
++ * exposes a fabric capability register, replace the body of this function with
++ * a syscon read of that register (magic + version check, then the speed
++ * capability bitmask) so that one kernel image and one DTB can serve both the
++ * fixed-1G TSN design and the 10/100/1G design, selected at runtime.
++ *
++ * Note the property describes the datapath, not PTP: PTP does not itself
++ * require a single rate, and a future design could have both PTP and rate
++ * adaptation.
++ */
++static bool socfpga_dwmac_is_fixed_1g(struct device *dev)
++{
++	return of_property_read_bool(dev->of_node, "altr,fixed-1000-datapath");
++}
++
+ static int socfpga_dwmac_parse_data(struct socfpga_dwmac *dwmac, struct device *dev)
+ {
+ 	struct device_node *np = dev->of_node;
+@@ -955,6 +973,15 @@ static int socfpga_dwmac_probe(struct platform_device *pdev)
+ 	plat_dat->mrphy_1g_crc_workaround =
+ 		of_property_read_bool(dev->of_node, "altr,mrphy-1g-crc-workaround");
+ 
++	/* Restrict the link to 1000baseT/Full on designs whose MAC datapath
++	 * supports only that rate. stmmac_mac_get_caps() uses this to narrow
++	 * mac_capabilities, which in turn narrows what the PHY is allowed to
++	 * advertise and what ethtool will accept.
++	 */
++	plat_dat->fixed_1g_datapath = socfpga_dwmac_is_fixed_1g(dev);
++	if (plat_dat->fixed_1g_datapath)
++		dev_info(dev, "MAC datapath is fixed 1G: restricting link to 1000baseT/Full\n");
++
+ 	/* The socfpga driver needs to control the stmmac reset to set the phy
+ 	 * mode. Create a copy of the core reset handle so it can be used by
+ 	 * the driver later.
+diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+index d71253a0e28f..0b388848773b 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
++++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+@@ -835,6 +835,18 @@ static unsigned long stmmac_mac_get_caps(struct phylink_config *config,
+ 	if (priv->plat->max_speed)
+ 		phylink_limit_mac_speed(config, priv->plat->max_speed);
+ 
++	/* Some designs wire the MAC datapath for a single fixed 1G rate and
++	 * have no 10/100 (or 2.5G) support at all. Narrowing the capability
++	 * mask here makes phylink_validate() mask the PHY's supported and
++	 * advertising link modes down to 1000baseT/Full when the PHY is
++	 * brought up, so autonegotiation can never settle on a rate the
++	 * hardware cannot carry, and phylink_ethtool_ksettings_set() rejects
++	 * any attempt to advertise one with -EINVAL.
++	 */
++	if (priv->plat->fixed_1g_datapath)
++		config->mac_capabilities &= MAC_1000FD | MAC_SYM_PAUSE |
++					    MAC_ASYM_PAUSE;
++
+ 	return config->mac_capabilities;
+ }
+ 
+@@ -1101,6 +1113,42 @@ static void stmmac_check_pcs_mode(struct stmmac_priv *priv)
+ 	}
+ }
+ 
++/* Disable autonomous PHY downshift.
++ *
++ * On a fixed-1G datapath, restricting the advertised link modes is not by
++ * itself sufficient: PHYs that implement downshift (for example the MaxLinear
++ * GPY series) will drop the link to 100M on their own when 1G training fails
++ * on a marginal cable, regardless of what was advertised. The MAC then has a
++ * link that is up but carries no traffic. Turn the feature off so a bad link
++ * stays visibly down instead.
++ */
++static void stmmac_phy_disable_downshift(struct stmmac_priv *priv,
++					 struct phy_device *phydev)
++{
++	struct ethtool_tunable tuna = {
++		.id		= ETHTOOL_PHY_DOWNSHIFT,
++		.type_id	= ETHTOOL_TUNABLE_U8,
++		.len		= sizeof(u8),
++	};
++	u8 count = DOWNSHIFT_DEV_DISABLE;
++	int ret;
++
++	if (!phydev || !phydev->drv || !phydev->drv->set_tunable) {
++		netdev_dbg(priv->dev,
++			   "PHY has no downshift tunable; nothing to disable\n");
++		return;
++	}
++
++	mutex_lock(&phydev->lock);
++	ret = phydev->drv->set_tunable(phydev, &tuna, &count);
++	mutex_unlock(&phydev->lock);
++
++	if (ret && ret != -EOPNOTSUPP)
++		netdev_warn(priv->dev,
++			    "failed to disable PHY downshift (error: %pe)\n",
++			    ERR_PTR(ret));
++}
++
+ /**
+  * stmmac_init_phy - PHY initialization
+  * @dev: net device structure
+@@ -1164,6 +1212,13 @@ static int stmmac_init_phy(struct net_device *dev)
+ 		return ret;
+ 	}
+ 
++	/* phylink has masked the PHY's supported and advertising link modes
++	 * against mac_capabilities by this point, but downshift operates
++	 * below that and has to be turned off explicitly.
++	 */
++	if (priv->plat->fixed_1g_datapath)
++		stmmac_phy_disable_downshift(priv, dev->phydev);
++
+ 	/* Configure phylib's copy of the LPI timer. Normally,
+ 	 * phylink_config.lpi_timer_default would do this, but there is a
+ 	 * chance that userspace could change the eee_timer setting via sysfs
+diff --git a/include/linux/stmmac.h b/include/linux/stmmac.h
+index b6d152b35118..f70ecf43473c 100644
+--- a/include/linux/stmmac.h
++++ b/include/linux/stmmac.h
+@@ -273,6 +273,7 @@ struct plat_stmmacenet_data {
+ 	int (*mrphy_get_pcs_rx_latency)(void *priv, u32 *pcs_rx_lat);
+ 	int (*mrphy_get_pcs_tx_latency)(void *priv, u32 *pcs_tx_lat);
+ 	bool mrphy_1g_crc_workaround;
++	bool fixed_1g_datapath;
+ 	struct mac_device_info *(*setup)(void *priv);
+ 	int (*clks_config)(void *priv, bool enabled);
+ 	int (*crosststamp)(ktime_t *device, struct system_counterval_t *system,
+-- 
+2.46.1
+

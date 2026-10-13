@@ -1,0 +1,82 @@
+From a0db6e0ee83d7c2494337f85188777b9e2cb1a88 Mon Sep 17 00:00:00 2001
+From: Mahesh R Vaidya <mahesh.r.vaidya@intel.com>
+Date: Thu, 8 May 2025 02:40:43 +0530
+Subject: [PATCH] arm64: dts: agilex3: Add TSN config-3 1x1G support
+
+        1. Created MRPHY gmii-to-sgmii adapter node in tsn cfg3 dts file.
+        2. Modified the gmac0 node in dts file to support gmii mac mode and
+           phy mode to sgmii requried for AG3 LTH TSN CFG-3.
+
+Upstream-Status: Inappropriate [Changes only for TSN CFG3 system design]
+Signed-off-by: Mahesh R Vaidya <mahesh.r.vaidya@intel.com>
+---
+ arch/arm64/boot/dts/intel/Makefile            |  1 +
+ .../intel/socfpga_agilex3_socdk_tsn_cfg3.dts  | 44 +++++++++++++++++++
+ 2 files changed, 45 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/intel/socfpga_agilex3_socdk_tsn_cfg3.dts
+
+diff --git a/arch/arm64/boot/dts/intel/Makefile b/arch/arm64/boot/dts/intel/Makefile
+index dea14e74b13e..d4a7d6d3131c 100644
+--- a/arch/arm64/boot/dts/intel/Makefile
++++ b/arch/arm64/boot/dts/intel/Makefile
+@@ -9,6 +9,7 @@ dtb-$(CONFIG_ARCH_INTEL_SOCFPGA) += socfpga_agilex_n6000.dtb \
+ 				socfpga_agilex3_socdk.dtb \
+ 				socfpga_agilex3_socdk_qspi_atfboot.dtb \
+ 				socfpga_agilex3_socdk_sdmmc_atfboot.dtb \
++				socfpga_agilex3_socdk_tsn_cfg3.dtb \
+ 				socfpga_agilex5_socdk_a0.dtb \
+ 				socfpga_agilex5_socdk.dtb \
+ 				socfpga_agilex5_socdk_013b.dtb \
+diff --git a/arch/arm64/boot/dts/intel/socfpga_agilex3_socdk_tsn_cfg3.dts b/arch/arm64/boot/dts/intel/socfpga_agilex3_socdk_tsn_cfg3.dts
+new file mode 100644
+index 000000000000..088b303f1655
+--- /dev/null
++++ b/arch/arm64/boot/dts/intel/socfpga_agilex3_socdk_tsn_cfg3.dts
+@@ -0,0 +1,44 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (c) 2024, Intel Corporation
++ */
++#include "socfpga_agilex3_socdk.dts"
++
++/ {
++	gmii_to_sgmii_converter: phy@30020100 {
++		compatible = "altr,gmii-to-sgmii-2.0";
++		reg = <0x0 0x30020100 0x0 0x80>;
++		reg-names = "mrphy";
++	};
++};
++
++&gmac0 {
++	status = "okay";
++	phy-mode = "sgmii";
++	mac-mode = "gmii";
++	phy-handle = <&emac0_phy0>;
++	max-speed = <1000>;
++	max-frame-size = <9000>;
++	#address-cells = <1>;
++	#size-cells = <1>;
++	altr,gmii-to-sgmii-converter = <&gmii_to_sgmii_converter>;
++
++	mdio0 {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		compatible = "snps,dwmac-mdio";
++		emac0_phy0: ethernet-phy@4 {
++			compatible = "ethernet-phy-ieee802.3-c45";
++			reg = <4>;
++		};
++	};
++};
++
++&gmac1 {
++        status = "disabled";
++};
++
++&gmac2 {
++	status = "disabled";
++};
++
+-- 
+2.46.1
+

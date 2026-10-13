@@ -1,0 +1,141 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mahesh Vaidya <mahesh.vaidya@altera.com>
+Date: Mon, 31 Aug 2026 22:10:00 +0530
+Subject: [PATCH] UBoot: TSN CFG3: Configure Si5332 OUT9 to 156.25 MHz
+
+The SM TSN Config-3 daughterboard needs osc_clk at 156.25 MHz for the
+Multi-rate Ethernet PHY transceiver and SysPLL, but the board Si5332 leaves
+OUT9 at 100 MHz out of reset and the register update is volatile.
+
+Perform the same sequence from misc_init_r() so it runs unattended on every
+boot, for every boot source. The factory-plan register values are read back
+and verified first: the banked update is only safe while HSDIV1 stays in
+active mode, and forcing the part into READY state would interrupt the HPS
+DDR reference clock.
+
+Upstream-Status: Inappropriate [Changes only for LTH TSN CFG3 system design]
+Signed-off-by: Mahesh Vaidya <mahesh.vaidya@altera.com>
+---
+ arch/arm/mach-socfpga/misc_soc64.c | 89 ++++++++++++++
+ 1 file changed, 89 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/mach-socfpga/misc_soc64.c b/arch/arm/mach-socfpga/misc_soc64.c
+index 1111111..2222222 100644
+--- a/arch/arm/mach-socfpga/misc_soc64.c
++++ b/arch/arm/mach-socfpga/misc_soc64.c
+@@ -8,6 +8,7 @@
+ #include <altera.h>
+ #include <env.h>
+ #include <errno.h>
++#include <i2c.h>
+ #include <init.h>
+ #include <log.h>
+ #include <asm/arch/board.h>
+@@ -21,6 +22,7 @@
+ #include <asm/system.h>
+ #include <asm/global_data.h>
+ #include <linux/bitfield.h>
++#include <linux/kernel.h>
+ #include <mach/clock_manager.h>
+ 
+ #define RSU_DEFAULT_LOG_LEVEL  7
+@@ -202,8 +204,95 @@
+ 	mbox_hps_stage_notify(HPS_EXECUTION_STATE_OS);
+ }
+ 
++#if IS_ENABLED(CONFIG_TARGET_SOCFPGA_AGILEX5) && IS_ENABLED(CONFIG_DM_I2C)
++/*
++ * SM TSN Config-3 daughterboard clock retarget.
++ *
++ * OUT9 of the board Si5332 drives osc_clk, the transceiver and SysPLL
++ * reference for the Multi-rate Ethernet PHY, and the factory plan leaves it at
++ * 100 MHz while the design needs 156.25 MHz. The change is volatile, so it has
++ * to be reapplied on every boot.
++ *
++ * HSDIV1 is already enabled by the factory plan, so its inactive B bank can be
++ * programmed while the part stays in active mode. Entering READY state instead
++ * would interrupt the HPS DDR reference clock, so the bank ordering below must
++ * be preserved. Unused board outputs OUT3/4/5 move along with OUT9.
++ */
++#define SI5332_I2C_BUS			0
++#define SI5332_I2C_ADDR			0x6a
++#define SI5332_REG_OUT9_SRC		0x29
++#define SI5332_REG_HSDIV1B		0x2e
++#define SI5332_REG_HSDIV1_BANK		0x35
++
++struct si5332_reg {
++	u8 reg;
++	u8 val;
++};
++
++/* Factory-plan state that the sequence below is known to be valid against. */
++static const struct si5332_reg si5332_factory_state[] = {
++	{ SI5332_REG_OUT9_SRC,		0x72 },	/* OUT9 group direct from CLKIN2 */
++	{ SI5332_REG_HSDIV1B,		0x00 },	/* HSDIV1B is the inactive bank */
++	{ SI5332_REG_HSDIV1_BANK,	0x00 },	/* HSDIV1 selects bank A */
++};
++
++static const struct si5332_reg si5332_out9_156p25[] = {
++	{ SI5332_REG_HSDIV1B,		0x10 },	/* HSDIV1B: 2500 / 16 = 156.25 MHz */
++	{ SI5332_REG_HSDIV1_BANK,	0x02 },	/* switch HSDIV1 to bank B */
++	{ SI5332_REG_OUT9_SRC,		0x12 },	/* route OUT9 group from HSDIV1 */
++};
++
++static void si5332_config_out9_156p25(void)
++{
++	struct udevice *dev = NULL;
++	unsigned int i;
++	int ret;
++	u8 val;
++
++	ret = i2c_get_chip_for_busnum(SI5332_I2C_BUS, SI5332_I2C_ADDR, 1, &dev);
++	if (ret) {
++		debug("Si5332: no device at I2C bus %d addr 0x%02x (%d)\n",
++		      SI5332_I2C_BUS, SI5332_I2C_ADDR, ret);
++		return;
++	}
++
++	for (i = 0; i < ARRAY_SIZE(si5332_factory_state); i++) {
++		ret = dm_i2c_read(dev, si5332_factory_state[i].reg, &val, 1);
++		if (ret) {
++			printf("Si5332: read 0x%02x failed (%d), OUT9 unchanged\n",
++			       si5332_factory_state[i].reg, ret);
++			return;
++		}
++
++		if (val != si5332_factory_state[i].val) {
++			printf("Si5332: 0x%02x is 0x%02x, expected 0x%02x, OUT9 unchanged\n",
++			       si5332_factory_state[i].reg, val,
++			       si5332_factory_state[i].val);
++			return;
++		}
++	}
++
++	for (i = 0; i < ARRAY_SIZE(si5332_out9_156p25); i++) {
++		ret = dm_i2c_write(dev, si5332_out9_156p25[i].reg,
++				   &si5332_out9_156p25[i].val, 1);
++		if (ret) {
++			printf("Si5332: write 0x%02x = 0x%02x failed (%d)\n",
++			       si5332_out9_156p25[i].reg,
++			       si5332_out9_156p25[i].val, ret);
++			return;
++		}
++	}
++
++	printf("Si5332: OUT9 retargeted to 156.25 MHz\n");
++}
++#endif
++
+ int misc_init_r(void)
+ {
++#if IS_ENABLED(CONFIG_TARGET_SOCFPGA_AGILEX5) && IS_ENABLED(CONFIG_DM_I2C)
++	si5332_config_out9_156p25();
++#endif
++
+ #if IS_ENABLED(CONFIG_TARGET_SOCFPGA_AGILEX5)
+ 	if (is_agilex5_reva_workaround_required())
+ 		return smmu_sdm_init();
+-- 
+2.46.1
+
+

@@ -1,0 +1,357 @@
+# -------------------------------------------------------------------------- #
+#
+# Copyright (C) 2024  Intel Corporation. All rights reserved.
+# Your use of Intel Corporation's design tools, logic functions 
+# and other software and tools, and any partner logic 
+# functions, and any output files from any of the foregoing 
+# (including device programming or simulation files), and any 
+# associated documentation or information are expressly subject 
+# to the terms and conditions of the Intel Program License 
+# Subscription Agreement, the Intel Quartus Prime License Agreement,
+# the Intel FPGA IP License Agreement, or other applicable license
+# agreement, including, without limitation, that your use is for
+# the sole purpose of programming logic devices manufactured by
+# Intel and sold by Intel or its authorized distributors.  Please
+# refer to the Intel FPGA Software License Subscription Agreements 
+# on the Quartus Prime software download page.
+#
+# -------------------------------------------------------------------------- #
+#
+# Quartus Prime
+# Version 24.3.0 Build 212 11/18/2024 SC Pro Edition
+# Date created = 16:01:31  May 29, 2025
+#
+# -------------------------------------------------------------------------- #
+set_global_assignment -name TOP_LEVEL_ENTITY agilex5_top
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION 24.3.0
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "16:01:31  MAY 29, 2025"
+set_global_assignment -name LAST_QUARTUS_VERSION "26.1.0 Pro Edition"
+set_global_assignment -name FAMILY "Agilex 3"
+set_global_assignment -name DEVICE A3CW135BM16AE6S
+set_global_assignment -name VERILOG_FILE agilex5_top.v
+set_global_assignment -name VERILOG_FILE custom_ip/debounce/debounce.v
+set_global_assignment -name VERILOG_FILE custom_ip/csr_shell.sv
+set_global_assignment -name VERILOG_FILE custom_ip/tsn_shell.sv
+set_global_assignment -name VERILOG_FILE custom_ip/rst_ctrl.sv
+set_global_assignment -name VERILOG_FILE custom_ip/user_csr_space_config3.v
+set_global_assignment -name VERILOG_FILE custom_ip/user_csr_space_concurrent.v
+set_global_assignment -name SYSTEMVERILOG_FILE custom_ip/tsn_rsvd_csr.sv
+set_global_assignment -name IP_SEARCH_PATHS "intel_custom_ip/**/*;custom_ip/**/*"
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+set_global_assignment -name SDC_FILE top_timing.sdc
+set_global_assignment -name HPS_DAP_NO_CERTIFICATE on
+set_global_assignment -name ENABLE_INTERMEDIATE_SNAPSHOTS ON
+set_global_assignment -name QSPI_OWNERSHIP HPS
+set_global_assignment -name USE_HPS_COLD_RESET SDM_IO10
+set_global_assignment -name USE_CONF_DONE SDM_IO16
+set_global_assignment -name USE_INIT_DONE SDM_IO0
+set_global_assignment -name SDM_DIRECT_TO_FACTORY_IMAGE SDM_IO13
+set_global_assignment -name HPS_INITIALIZATION "HPS FIRST"
+set_global_assignment -name DEVICE_INITIALIZATION_CLOCK OSC_CLK_1_100MHZ
+set_global_assignment -name HPS_DAP_SPLIT_MODE "SDM PINS"
+set_global_assignment -name AUTO_RESTART_CONFIGURATION OFF
+set_global_assignment -name STRATIX_JTAG_USER_CODE 4
+set_global_assignment -name USE_CHECKSUM_AS_USERCODE OFF
+# Default value is Flash, but it must be set to other value to avoid conflict the QSPI_OWNERSHIP.
+set_global_assignment -name PROGRAMMING_BITSTREAM_ENCRYPTION_KEY_SELECT eFuses
+set_location_assignment PIN_M24 -to osc_clk
+set_instance_assignment -name IO_STANDARD "CURRENT MODE LOGIC (CML)" -to osc_clk -entity agilex5_top
+# A3CW Rev-B TSN daughterboard contract:
+#   MxL86211 TX0 P/N -> FPGA MRPHY RX P/N on K30/K29
+#   FPGA MRPHY TX P/N on P30/P29 -> MxL86211 RX0 P/N
+# Quartus validates these four balls as bank-1A high-speed differential I/O
+# on the selected A3CW135BM16AE6S.
+set_location_assignment PIN_P30 -to pp_app_tx_serial_data[0]
+set_instance_assignment -name IO_STANDARD "HIGH SPEED DIFFERENTIAL I/O" -to pp_app_tx_serial_data[0] -entity agilex5_top
+set_location_assignment PIN_P29 -to pp_app_tx_serial_data_n[0]
+set_instance_assignment -name IO_STANDARD "HIGH SPEED DIFFERENTIAL I/O" -to pp_app_tx_serial_data_n[0] -entity agilex5_top
+set_location_assignment PIN_K30 -to app_pp_rx_serial_data[0]
+set_instance_assignment -name IO_STANDARD "HIGH SPEED DIFFERENTIAL I/O" -to app_pp_rx_serial_data[0] -entity agilex5_top
+set_location_assignment PIN_K29 -to app_pp_rx_serial_data_n[0]
+set_instance_assignment -name IO_STANDARD "HIGH SPEED DIFFERENTIAL I/O" -to app_pp_rx_serial_data_n[0] -entity agilex5_top
+set_location_assignment PIN_T4 -to emac_ptp_pps[0]
+set_instance_assignment -name IO_STANDARD "1.2-V" -to emac_ptp_pps[0] -entity agilex5_top
+set_location_assignment PIN_U4 -to emac_ptp_trig[0]
+set_instance_assignment -name IO_STANDARD "1.2-V" -to emac_ptp_trig[0] -entity agilex5_top
+set_location_assignment PIN_AJ25 -to c3_emac0_mdio_mdc0
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to c3_emac0_mdio_mdc0 -entity agilex5_top
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to c3_emac0_mdio_mdc0
+set_location_assignment PIN_AH26 -to c3_emac0_mdio_mdio0
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to c3_emac0_mdio_mdio0 -entity agilex5_top
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 30 OHM WITHOUT CALIBRATION" -to c3_emac0_mdio_mdio0
+set_instance_assignment -name INPUT_TERMINATION OFF -to c3_emac0_mdio_mdio0
+set_location_assignment PIN_W7 -to usb31_io_vbus_det
+set_instance_assignment -name IO_STANDARD "1.2-V" -to usb31_io_vbus_det -entity agilex5_top
+set_location_assignment PIN_W5 -to usb31_io_flt_bar
+set_instance_assignment -name IO_STANDARD "1.2-V" -to usb31_io_flt_bar -entity agilex5_top
+set_location_assignment PIN_P2 -to usb31_io_usb31_id
+set_instance_assignment -name IO_STANDARD "1.2-V" -to usb31_io_usb31_id -entity agilex5_top
+set_location_assignment PIN_AF22 -to usb31_io_usb_ctrl[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to usb31_io_usb_ctrl[1] -entity agilex5_top
+set_location_assignment PIN_AD2 -to usb31_io_usb_ctrl[0]
+set_instance_assignment -name IO_STANDARD "1.1-V" -to usb31_io_usb_ctrl[0] -entity agilex5_top
+set_location_assignment PIN_P25 -to usb31_phy_refclk_p_clk
+set_instance_assignment -name IO_STANDARD "CURRENT MODE LOGIC (CML)" -to usb31_phy_refclk_p_clk
+set_location_assignment PIN_F30 -to usb31_phy_rx_serial_p_i_rx_serial_p
+set_instance_assignment -name IO_STANDARD "HIGH SPEED DIFFERENTIAL I/O" -to usb31_phy_rx_serial_p_i_rx_serial_p
+set_location_assignment PIN_F29 -to usb31_phy_rx_serial_n_i_rx_serial_n
+set_instance_assignment -name IO_STANDARD "HIGH SPEED DIFFERENTIAL I/O" -to usb31_phy_rx_serial_n_i_rx_serial_n
+set_location_assignment PIN_K27 -to usb31_phy_tx_serial_p_o_tx_serial_p
+set_instance_assignment -name IO_STANDARD "HIGH SPEED DIFFERENTIAL I/O" -to usb31_phy_tx_serial_p_o_tx_serial_p
+set_location_assignment PIN_J27 -to usb31_phy_tx_serial_n_o_tx_serial_n
+set_instance_assignment -name IO_STANDARD "HIGH SPEED DIFFERENTIAL I/O" -to usb31_phy_tx_serial_n_o_tx_serial_n
+set_location_assignment PIN_AJ27 -to fpga_clk_100
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to fpga_clk_100 -entity agilex5_top
+set_instance_assignment -name INPUT_TERMINATION OFF -to fpga_clk_100
+set_location_assignment PIN_M1 -to fpga_reset_n
+set_instance_assignment -name IO_STANDARD "1.1-V" -to fpga_reset_n -entity agilex5_top
+set_instance_assignment -name INPUT_TERMINATION OFF -to fpga_reset_n
+set_location_assignment PIN_L1 -to fpga_button_pio
+set_instance_assignment -name IO_STANDARD "1.1-V" -to fpga_button_pio -entity agilex5_top
+set_location_assignment PIN_K1 -to fpga_led_pio[0]
+set_instance_assignment -name IO_STANDARD "1.1-V" -to fpga_led_pio[0] -entity agilex5_top
+set_location_assignment PIN_L2 -to fpga_led_pio[1]
+set_instance_assignment -name IO_STANDARD "1.1-V" -to fpga_led_pio[1] -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_osc_clk -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_jtag_tck -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_jtag_tms -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_jtag_tdo -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_jtag_tdi -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to hps_jtag_tdo
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_usb1_CLK -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_usb1_STP -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_usb1_DIR -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_usb1_NXT -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to hps_usb1_STP
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_usb1_DATA0 -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to hps_usb1_DATA0
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_usb1_DATA1 -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to hps_usb1_DATA1
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_usb1_DATA2 -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to hps_usb1_DATA2
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_usb1_DATA3 -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to hps_usb1_DATA3
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_usb1_DATA4 -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to hps_usb1_DATA4
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_usb1_DATA5 -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to hps_usb1_DATA5
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_usb1_DATA6 -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to hps_usb1_DATA6
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_usb1_DATA7 -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to hps_usb1_DATA7
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_emac2_TX_CLK -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_emac2_TX_CTL -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_emac2_RX_CLK -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_emac2_RX_CTL -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to hps_emac2_TX_CLK
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to hps_emac2_TX_CTL
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_emac2_RXD0 -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_emac2_TXD0 -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to hps_emac2_TXD0
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_emac2_RXD1 -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_emac2_TXD1 -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to hps_emac2_TXD1
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_emac2_RXD2 -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_emac2_TXD2 -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to hps_emac2_TXD2
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_emac2_RXD3 -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_emac2_TXD3 -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to hps_emac2_TXD3
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_emac2_MDIO -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_emac2_MDC -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to hps_emac2_MDIO
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to hps_emac2_MDC
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_gpio0_io1 -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to hps_gpio0_io1
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_gpio0_io11 -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to hps_gpio0_io11
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_gpio1_io3 -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to hps_gpio1_io3
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_gpio1_io4 -entity agilex5_top
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to hps_gpio1_io4
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_jtag_tck
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_jtag_tms
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_jtag_tdi
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_usb1_CLK
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_usb1_DIR
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_usb1_NXT
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_usb1_DATA0
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_usb1_DATA1
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_usb1_DATA2
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_usb1_DATA3
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_usb1_DATA4
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_usb1_DATA5
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_usb1_DATA6
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_usb1_DATA7
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_emac2_RX_CLK
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_emac2_RX_CTL
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_emac2_RXD0
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_emac2_RXD1
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_emac2_RXD2
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_emac2_RXD3
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_emac2_MDIO
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_gpio0_io1
+set_instance_assignment -name WEAK_PULL_UP_DN_SEL PULL_UP_20 -to hps_gpio0_io11
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_sdmmc_CCLK -entity agilex5_top
+set_location_assignment PIN_E9 -to emif_hps_emif_mem_0_mem_ck_t
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_ck_t -entity agilex5_top
+set_location_assignment PIN_E10 -to emif_hps_emif_mem_0_mem_ck_c
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_ck_c -entity agilex5_top
+set_location_assignment PIN_A4 -to emif_hps_emif_mem_0_mem_cke
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_cke -entity agilex5_top
+set_location_assignment PIN_E15 -to emif_hps_emif_mem_0_mem_reset_n
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_reset_n -entity agilex5_top
+set_location_assignment PIN_C7 -to emif_hps_emif_mem_0_mem_cs
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_cs -entity agilex5_top
+set_location_assignment PIN_C2 -to emif_hps_emif_mem_0_mem_ca[0]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_ca[0] -entity agilex5_top
+set_location_assignment PIN_D3 -to emif_hps_emif_mem_0_mem_ca[1]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_ca[1] -entity agilex5_top
+set_location_assignment PIN_C3 -to emif_hps_emif_mem_0_mem_ca[2]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_ca[2] -entity agilex5_top
+set_location_assignment PIN_B3 -to emif_hps_emif_mem_0_mem_ca[3]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_ca[3] -entity agilex5_top
+set_location_assignment PIN_A6 -to emif_hps_emif_mem_0_mem_ca[4]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_ca[4] -entity agilex5_top
+set_location_assignment PIN_B5 -to emif_hps_emif_mem_0_mem_ca[5]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_ca[5] -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_sdmmc_CMD -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_sdmmc_D0 -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_sdmmc_D1 -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_sdmmc_D2 -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_sdmmc_D3 -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_i3c1_SDA -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_i3c1_SCL -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_i2c0_SDA -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_i2c0_SCL -entity agilex5_top
+set_instance_assignment -name IO_STANDARD "1.8-V" -to hps_gpio0_io0 -entity agilex5_top
+set_location_assignment PIN_H6 -to emif_hps_emif_mem_0_mem_dq[0]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[0]
+set_location_assignment PIN_H7 -to emif_hps_emif_mem_0_mem_dq[1]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[1]
+set_location_assignment PIN_G5 -to emif_hps_emif_mem_0_mem_dq[2]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[2]
+set_location_assignment PIN_G6 -to emif_hps_emif_mem_0_mem_dq[3]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[3]
+set_location_assignment PIN_M6 -to emif_hps_emif_mem_0_mem_dq[4]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[4]
+set_location_assignment PIN_N5 -to emif_hps_emif_mem_0_mem_dq[5]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[5]
+set_location_assignment PIN_M5 -to emif_hps_emif_mem_0_mem_dq[6]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[6]
+set_location_assignment PIN_L6 -to emif_hps_emif_mem_0_mem_dq[7]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[7]
+set_location_assignment PIN_L3 -to emif_hps_emif_mem_0_mem_dq[8]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[8]
+set_location_assignment PIN_J5 -to emif_hps_emif_mem_0_mem_dq[9]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[9]
+set_location_assignment PIN_M3 -to emif_hps_emif_mem_0_mem_dq[10]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[10]
+set_location_assignment PIN_L4 -to emif_hps_emif_mem_0_mem_dq[11]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[11]
+set_location_assignment PIN_M4 -to emif_hps_emif_mem_0_mem_dq[12]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[12]
+set_location_assignment PIN_G4 -to emif_hps_emif_mem_0_mem_dq[13]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[13]
+set_location_assignment PIN_H3 -to emif_hps_emif_mem_0_mem_dq[14]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[14]
+set_location_assignment PIN_H5 -to emif_hps_emif_mem_0_mem_dq[15]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[15]
+set_location_assignment PIN_D15 -to emif_hps_emif_mem_0_mem_dq[16]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[16]
+set_location_assignment PIN_C13 -to emif_hps_emif_mem_0_mem_dq[17]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[17]
+set_location_assignment PIN_C10 -to emif_hps_emif_mem_0_mem_dq[18]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[18]
+set_location_assignment PIN_D10 -to emif_hps_emif_mem_0_mem_dq[19]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[19]
+set_location_assignment PIN_C8 -to emif_hps_emif_mem_0_mem_dq[20]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[20]
+set_location_assignment PIN_D9 -to emif_hps_emif_mem_0_mem_dq[21]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[21]
+set_location_assignment PIN_D14 -to emif_hps_emif_mem_0_mem_dq[22]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[22]
+set_location_assignment PIN_C15 -to emif_hps_emif_mem_0_mem_dq[23]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[23]
+set_location_assignment PIN_A8 -to emif_hps_emif_mem_0_mem_dq[24]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[24]
+set_location_assignment PIN_B8 -to emif_hps_emif_mem_0_mem_dq[25]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[25]
+set_location_assignment PIN_A9 -to emif_hps_emif_mem_0_mem_dq[26]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[26]
+set_location_assignment PIN_B9 -to emif_hps_emif_mem_0_mem_dq[27]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[27]
+set_location_assignment PIN_B13 -to emif_hps_emif_mem_0_mem_dq[28]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[28]
+set_location_assignment PIN_A13 -to emif_hps_emif_mem_0_mem_dq[29]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[29]
+set_location_assignment PIN_B14 -to emif_hps_emif_mem_0_mem_dq[30]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[30]
+set_location_assignment PIN_A14 -to emif_hps_emif_mem_0_mem_dq[31]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dq[31]
+set_location_assignment PIN_B6 -to "emif_hps_emif_ref_clk_0_clk(n)"
+set_location_assignment PIN_L7 -to emif_hps_emif_mem_0_mem_dmi[0]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dmi[0] -entity agilex5_top
+set_location_assignment PIN_K5 -to emif_hps_emif_mem_0_mem_dmi[1]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dmi[1] -entity agilex5_top
+set_location_assignment PIN_D13 -to emif_hps_emif_mem_0_mem_dmi[2]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dmi[2] -entity agilex5_top
+set_location_assignment PIN_B11 -to emif_hps_emif_mem_0_mem_dmi[3]
+set_instance_assignment -name IO_STANDARD "1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dmi[3] -entity agilex5_top
+set_location_assignment PIN_B10 -to emif_hps_emif_mem_0_mem_dqs_t[3]
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dqs_t[3] -entity agilex5_top
+set_location_assignment PIN_A11 -to emif_hps_emif_mem_0_mem_dqs_c[3]
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dqs_c[3] -entity agilex5_top
+set_location_assignment PIN_K7 -to emif_hps_emif_mem_0_mem_dqs_t[0]
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dqs_t[0] -entity agilex5_top
+set_location_assignment PIN_J7 -to emif_hps_emif_mem_0_mem_dqs_c[0]
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dqs_c[0] -entity agilex5_top
+set_location_assignment PIN_J4 -to emif_hps_emif_mem_0_mem_dqs_t[1]
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dqs_t[1] -entity agilex5_top
+set_location_assignment PIN_D12 -to emif_hps_emif_mem_0_mem_dqs_t[2]
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dqs_t[2] -entity agilex5_top
+set_location_assignment PIN_J3 -to emif_hps_emif_mem_0_mem_dqs_c[1]
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dqs_c[1] -entity agilex5_top
+set_location_assignment PIN_C11 -to emif_hps_emif_mem_0_mem_dqs_c[2]
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.1-V LVSTL" -to emif_hps_emif_mem_0_mem_dqs_c[2] -entity agilex5_top
+set_location_assignment PIN_E14 -to emif_hps_emif_oct_0_oct_rzqin
+set_instance_assignment -name IO_STANDARD "1.1-V" -to emif_hps_emif_oct_0_oct_rzqin -entity agilex5_top
+set_location_assignment PIN_A7 -to emif_hps_emif_ref_clk_0_clk
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to hps_i2c0_SDA
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to hps_i2c0_SCL
+set_instance_assignment -name SLEW_RATE 0 -to hps_i2c0_SDA
+set_instance_assignment -name SLEW_RATE 0 -to hps_i2c0_SCL
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to fpga_led_pio[0]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to fpga_led_pio[1]
+set_instance_assignment -name SLEW_RATE 0 -to fpga_led_pio[0]
+set_instance_assignment -name SLEW_RATE 0 -to fpga_led_pio[1]
+set_global_assignment -name NUMBER_OF_SLAVE_DEVICE 2
+set_global_assignment -name BOARD default
+set_global_assignment -name IP_FILE src/ip/emif_io96b_hps.ip
+set_global_assignment -name VDS_FILE src/vds/qsys_top/qsys_top.vds -tag "vds::qsys_top"
+set_global_assignment -name VDS_IP_FILE src/vds/qsys_top/ip/clk_100.ip -tag "vds::qsys_top"
+set_global_assignment -name VDS_IP_FILE src/vds/qsys_top/ip/csr_rst.ip -tag "vds::qsys_top"
+set_global_assignment -name VDS_IP_FILE src/vds/qsys_top/ip/gts_inst.ip -tag "vds::qsys_top"
+set_global_assignment -name VDS_IP_FILE src/vds/qsys_top/ip/ocm.ip -tag "vds::qsys_top"
+set_global_assignment -name VDS_IP_FILE src/vds/qsys_top/ip/rst_in.ip -tag "vds::qsys_top"
+set_global_assignment -name VDS_FILE src/vds/tsn_subsys/tsn_subsys.vds -tag "vds::tsn_subsys"
+set_global_assignment -name VDS_IP_FILE src/vds/tsn_subsys/ip/axi_bridge_0.ip -tag "vds::tsn_subsys"
+set_global_assignment -name VDS_IP_FILE src/vds/tsn_subsys/ip/clock_bridge_0.ip -tag "vds::tsn_subsys"
+set_global_assignment -name VDS_IP_FILE src/vds/tsn_subsys/ip/intel_mge_phy_0.ip -tag "vds::tsn_subsys"
+set_global_assignment -name VDS_IP_FILE src/vds/tsn_subsys/ip/intel_systemclk_gts_0.ip -tag "vds::tsn_subsys"
+set_global_assignment -name VDS_IP_FILE src/vds/tsn_subsys/ip/iopll_0.ip -tag "vds::tsn_subsys"
+set_global_assignment -name VDS_IP_FILE src/vds/tsn_subsys/ip/mm_bridge_0.ip -tag "vds::tsn_subsys"
+set_global_assignment -name VDS_IP_FILE src/vds/tsn_subsys/ip/mm_bridge_1.ip -tag "vds::tsn_subsys"
+set_global_assignment -name VDS_IP_FILE src/vds/tsn_subsys/ip/mm_bridge_2.ip -tag "vds::tsn_subsys"
+set_global_assignment -name VDS_IP_FILE src/vds/tsn_subsys/ip/mm_bridge_3.ip -tag "vds::tsn_subsys"
+set_global_assignment -name VDS_IP_FILE src/vds/tsn_subsys/ip/mm_bridge_4.ip -tag "vds::tsn_subsys"
+set_global_assignment -name VDS_IP_FILE src/vds/tsn_subsys/ip/mm_bridge_5.ip -tag "vds::tsn_subsys"
+set_global_assignment -name VDS_IP_FILE src/vds/tsn_subsys/ip/tsn_subsys_mm_bridge_6.ip -tag "vds::tsn_subsys"
+set_global_assignment -name VDS_IP_FILE src/vds/tsn_subsys/ip/reset_bridge_0.ip -tag "vds::tsn_subsys"
+set_global_assignment -name VDS_IP_FILE src/vds/tsn_subsys/ip/reset_bridge_1.ip -tag "vds::tsn_subsys"
+set_global_assignment -name VDS_IP_FILE src/vds/tsn_subsys/ip/tsn_subsys_reset_in.ip -tag "vds::tsn_subsys"
+set_global_assignment -name VDS_IP_FILE src/vds/tsn_subsys/ip/reset_ip.ip -tag "vds::tsn_subsys"
+set_global_assignment -name VDS_FILE src/vds/hps_subsys/hps_subsys.vds -tag "vds::hps_subsys"
+set_global_assignment -name VDS_IP_FILE src/vds/hps_subsys/ip/agilex_hps.ip -tag "vds::hps_subsys"
+set_global_assignment -name SDC_FILE top_user.sdc
+

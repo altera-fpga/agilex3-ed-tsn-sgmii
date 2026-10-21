@@ -56,11 +56,6 @@ set_global_assignment -name USE_CHECKSUM_AS_USERCODE OFF
 set_global_assignment -name PROGRAMMING_BITSTREAM_ENCRYPTION_KEY_SELECT eFuses
 set_location_assignment PIN_M24 -to osc_clk
 set_instance_assignment -name IO_STANDARD "CURRENT MODE LOGIC (CML)" -to osc_clk -entity agilex5_top
-# A3CW Rev-B TSN daughterboard contract:
-#   MxL86211 TX0 P/N -> FPGA MRPHY RX P/N on K30/K29
-#   FPGA MRPHY TX P/N on P30/P29 -> MxL86211 RX0 P/N
-# Quartus validates these four balls as bank-1A high-speed differential I/O
-# on the selected A3CW135BM16AE6S.
 set_location_assignment PIN_P30 -to pp_app_tx_serial_data[0]
 set_instance_assignment -name IO_STANDARD "HIGH SPEED DIFFERENTIAL I/O" -to pp_app_tx_serial_data[0] -entity agilex5_top
 set_location_assignment PIN_P29 -to pp_app_tx_serial_data_n[0]

@@ -21,7 +21,7 @@ The system block diagram is shown below:
 |--- src
 |   |--- hw    # Quartus / VDS FPGA design
 |   |--- sw    # Yocto GSRD layers
-|   |--- sim   # UVM / ITF simulation (internal)
+|   
 ```
 
 ## Project details
@@ -30,16 +30,15 @@ The system block diagram is shown below:
 | --------------- | ----------------------------------------------------------------------------------------------------- |
 | Family          | Agilex 3                                                                                              |
 | Quartus version | 26.1.0 Pro (last HW compile)                                                                          |
-| Development kit | Agilex™ 3 FPGA E-Series Premium Development Kit (A3CW)                                               |
-| Device part     | `A3CW135BM16AE6S`                                                                                   |
-| Ethernet        | 1× 1G, MR PHY Direct + GMII-8 + MGBASE-T (MxL86211)                                                  |
+| Development kit | Agilex™ 3 FPGA E-Series Premium Development Kit (A3CW)                                                |
+| Device part     | `A3CW135BM16AE6S`                                                                                     |
+| Ethernet        | 1× 1G, MR PHY Direct + GMII-8 + MGBASE-T (MxL86211)                                                   |
 | Category        | HPS, Ethernet, TSN                                                                                    |
-| Design support  | Simulation, Compile/Timing, Hardware                                                                  |
 | Source          | GitHub                                                                                                |
-| URL             | https://github.com/altera-fpga/agilex3-ed-tsn-sgmii |
+| URL             | https://github.com/altera-fpga/agilex3-ed-tsn-sgmii                                                   |
 
 ## Getting started
 
 - [HW build README](src/hw/dk-a3w135bm16aea/README.md)
 - [SW build README](src/sw/README.md)
-- [Simulation README](src/sim/README.md)
+

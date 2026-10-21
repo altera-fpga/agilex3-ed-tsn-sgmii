@@ -1,6 +1,6 @@
 # Yocto Project layer with Agilex™ 3 LTH - SGMII XCVR  1×1G TSN / Multi-rate Ethernet PHY System Example Design (TSN Config-3)
 
-This directory contains a Yocto Project layer with the [Agilex™ 3 LTH - SGMII XCVR System Example](https://github.com/altera-innersource/applications.fpga.system-example-designs.agilex3-ed-tsn-config3). 
+This directory contains a Yocto Project layer with the [Agilex™ 3 LTH - SGMII XCVR System Example](https://github.com/altera-fpga/agilex3-ed-tsn-sgmii.git). 
 HPS + Multi-rate Ethernet PHY system example for SM TSN Config-3: one 1 GbE Ethernet datapath from the HPS EMAC through Multi-rate Ethernet PHY IP (Direct mode, GMII-8) to an external MGBASE-T PHY on the A3CW Rev-B TSN daughterboard (MxL86211).
 
 ## Meta Layers
@@ -17,18 +17,19 @@ Dependencies
 
 |    Board                                               |   OPN             |    Image                |
 | ------------------------------------------------------ | ----------------- | ----------------------- | 
-| Agilex™ 3 FPGA E-Series Premium Development Kit        | A3CW135BM16AE6S   |   gsrd [ qspi + emmc ]  |
+| Agilex™ 3 FPGA and SoC C-Series Development Kit        | DK-A3W135BM16AEA  |   gsrd [ qspi + emmc ]  |
 | ------------------------------------------------------ | ----------------- | ----------------------- |
 
 
 ## SM TSN Config-3 GSRD Setup
 1. Clone the repository.
-`$ git clone https://github.com/altera-innersource/applications.fpga.system-example-designs.agilex3-ed-tsn-config3`
+`$ git clone https://github.com/altera-fpga/agilex3-ed-tsn-sgmii.git`
 `$ cd applications.fpga.system-example-designs.agilex3-ed-tsn-config3`
+`$ git checkout rel/26.1`
 `$ cd src/sw`
 
 
-2. Source the script to set component versions (Linux, U-Boot, ATF, Machine, Image):
+3. Source the script to set component versions (Linux, U-Boot, ATF, Machine, Image):
 
 |    Target                  |              Command                            |
 | -------------------------- | ----------------------------------------------- |
@@ -44,9 +45,10 @@ Dependencies
 
               a. Add custom GHRD design in the below path:
                    $WORKSPACE/src/sw/meta-altera-tsn-sgmii/recipes-bsp/ghrd/files/
-                   NOTE: Update/Replace the GHRD core rbf file with the same naming convention given below
+                   NOTE: Update/Replace the GHRD rbf file with the same naming convention given below
                             For Agilex3:-
                                           agilex3_gsrd_ghrd.core.rbf
+                                          agilex3_gsrd_ghrd.hps.rbf
 
               b. Update SRC_URL in the below recipe:
                     $WORKSPACE/src/sw/meta-altera-tsn-sgmii/recipes-bsp/ghrd/hw-ref-design.bbappend

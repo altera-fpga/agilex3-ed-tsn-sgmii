@@ -17,7 +17,6 @@ The system block diagram is shown below:
 ## Repository structure
 
 ```bash
-|--- doc
 |--- src
 |   |--- hw    # Quartus / VDS FPGA design
 |   |--- sw    # Yocto GSRD layers

@@ -124,7 +124,7 @@ Register offsets are byte addresses within the user CSR window (7-bit Avalon add
 2. Change to this directory:
 
    ```bash
-   cd src/hw/a5e065bb32aes1_mdk_1x1G
+   cd src/hw/dk-a3w135bm16aea
    ```
 3. Compile:
 

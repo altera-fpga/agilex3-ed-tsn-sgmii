@@ -140,4 +140,3 @@ The project pulls RTL (`agilex5_top.v`, `custom_ip/*`), SDC files, and VDS syste
 ## Related
 
 - Software / GSRD Yocto: [`../../sw/README.md`](../../sw/README.md)
-- Simulation (1-port 1G DUT): [`../../sim/README.md`](../../sim/README.md)
